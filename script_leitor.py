@@ -6,8 +6,8 @@ import itertools
 import time
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
-pasta_arquivos = os.path.join(base_dir, "PDFs")
-pasta_saida_resultado = os.path.join(base_dir, "Result_Analise")
+pasta_arquivos = os.path.join(base_dir, "Archives")
+pasta_saida_resultado = os.path.join(base_dir, "Result_Analysis")
 
 os.makedirs(pasta_arquivos, exist_ok=True)
 os.makedirs(pasta_saida_resultado, exist_ok=True)
@@ -83,7 +83,7 @@ def processar_arquivos():
     arquivos = [f for f in os.listdir(pasta_arquivos) if os.path.isfile(os.path.join(pasta_arquivos, f))]
 
     if not arquivos:
-        messagebox.showerror("Erro", "Nenhum arquivo encontrado na pasta 'PDFs'.")
+        messagebox.showerror("Erro", "Nenhum arquivo encontrado na pasta 'Archives'.")
         return
 
     for arquivo in arquivos:
@@ -96,7 +96,7 @@ def processar_arquivos():
 root = tk.Tk()
 root.withdraw()
 
-resposta = messagebox.askyesno("Iniciar Leitura", "Deseja iniciar a análise dos arquivos na pasta 'PDFs'?")
+resposta = messagebox.askyesno("Iniciar Leitura", "Deseja iniciar a análise dos arquivos na pasta 'Archives'?")
 if resposta:
     processar_arquivos()
 
