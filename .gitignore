@@ -2,7 +2,12 @@
 .env
 
 # Ignorar pastas de saída
-/Result_Analise/
+/Result_Analysis/*
+!/Result_Analysis/.gitkeep
+
+/Archives/*
+!/Archives/.gitkeep
+
 
 # Ignorar arquivos específicos do Python
 __pycache__/
