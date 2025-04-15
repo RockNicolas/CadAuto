@@ -2,7 +2,6 @@
 .env
 
 # Ignorar pastas de saída
-/txt_extraidos/
 /Result_Analise/
 
 # Ignorar arquivos específicos do Python
