@@ -34,12 +34,13 @@ def processar_pdfs():
                 txt_arquivo.write(texto_total)
 
             print(f"✅ Texto salvo em: {caminho_txt}")
+            os.startfile(caminho_txt)
 
         except Exception as e:
             print(f"❌ Erro ao processar {pdf}: {e}")
 
 root = tk.Tk()
-root.withdraw() 
+root.withdraw()
 
 resposta = messagebox.askyesno("Iniciar Leitura", "Deseja iniciar a leitura dos PDFs da pasta 'PDFs'?")
 if resposta:
