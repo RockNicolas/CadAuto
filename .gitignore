@@ -1,0 +1,19 @@
+# Ignorar arquivos de configuração sensíveis
+.env
+
+# Ignorar pastas de saída
+/txt_extraidos/
+/Result_Analise/
+
+# Ignorar arquivos específicos do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar arquivos gerados por IDEs (Exemplo para PyCharm, VSCode, etc.)
+.idea/
+.vscode/
+
+# Ignorar arquivos de dependências (caso tenha um ambiente virtual)
+venv/
+env/
