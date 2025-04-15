@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+#openai.api_key = ""
+
 base_dir = os.path.dirname(os.path.abspath(__file__))
 pasta_pdfs = os.path.join(base_dir, "PDFs")
 pasta_saida_extraidos = os.path.join(base_dir, "txt_extraidos")  
@@ -22,6 +24,7 @@ os.makedirs(pasta_saida_resultado, exist_ok=True)
 
 def analisar_com_gpt(texto):
     try:
+        time.sleep(5) 
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -70,7 +73,8 @@ def mostrar_spinner_e_analisar(texto, nome_pdf):
 
     def executar_analise():
         resultado = analisar_com_gpt(texto)
-        salvar_resultado_analise(nome_pdf, resultado)
+        caminho_analise = salvar_resultado_analise(nome_pdf, resultado)
+        print(f"✅ Texto Analisado em: {os.path.abspath(caminho_analise)}")
         nonlocal animando
         animando = False
         janela_spinner.destroy()
