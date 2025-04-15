@@ -6,11 +6,14 @@ import itertools
 import time
 import pyautogui
 import subprocess
+from dotenv import load_dotenv
+
+load_dotenv()
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 pasta_arquivos = os.path.join(base_dir, "Archives")
 pasta_saida_resultado = os.path.join(base_dir, "Result_Analysis")
-pasta_automacao = r"C:\Users\60918958342\Desktop\projetos Nicolas Rock\CadAuto\Archives"
+pasta_automacao = os.getenv("PASTA_AUTOMACAO")
 
 os.makedirs(pasta_arquivos, exist_ok=True)
 os.makedirs(pasta_saida_resultado, exist_ok=True)
@@ -87,27 +90,31 @@ def mostrar_resultado_final(texto, nome_arquivo):
     botao_automacao = tk.Button(janela_final, text="Automação", command=lambda: automacao(nome_arquivo))
     botao_automacao.pack(pady=10)
 
+#FOCO NA BUSCA
 def automacao(nome_arquivo):
-    caminho_pasta = pasta_automacao
+    caminho_pasta = pasta_arquivos
 
     if not os.path.exists(os.path.join(caminho_pasta, nome_arquivo)):
         messagebox.showerror("Erro", f"Arquivo {nome_arquivo} não encontrado na pasta de automação.")
         return
 
     subprocess.Popen(f'explorer "{caminho_pasta}"')
-    time.sleep(2.5)
+    time.sleep(3)
 
     pyautogui.hotkey('ctrl', 'f')
     time.sleep(1)
 
     nome_base = os.path.splitext(nome_arquivo)[0]
-    pyautogui.write(nome_base[:100], interval=0.02) 
-    pyautogui.press('enter')
-
-    time.sleep(4) 
-
-    pyautogui.press('down') 
+    pyautogui.write(nome_base[:100], interval=0.02)
     pyautogui.press('enter')  
+
+    time.sleep(3)
+
+    pyautogui.press('down')   
+    time.sleep(0.5)
+    pyautogui.press('enter')  
+    time.sleep(0.5)
+    pyautogui.press('enter')  #
 
 
 def exibir_interface_de_resultados():

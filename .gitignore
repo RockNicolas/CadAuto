@@ -1,11 +1,12 @@
 # Ignorar arquivos de configuração sensíveis
 .env
 
-# Ignorar pastas de saída
-/Result_Analysis/*
+# Ignorar tudo dentro de Result_Analysis, exceto a pasta
+/Result_Analysis/**
 !/Result_Analysis/.gitkeep
 
-/Archives/*
+# Ignorar tudo dentro de Archives, exceto a pasta
+/Archives/**
 !/Archives/.gitkeep
 
 
