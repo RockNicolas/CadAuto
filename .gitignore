@@ -1,15 +1,6 @@
 # Ignorar arquivos de configuração sensíveis
 .env
 
-# Ignorar tudo dentro de Result_Analysis, exceto a pasta
-/Result_Analysis/**
-!/Result_Analysis/.gitkeep
-
-# Ignorar tudo dentro de Archives, exceto a pasta
-/Archives/**
-!/Archives/.gitkeep
-
-
 # Ignorar arquivos específicos do Python
 __pycache__/
 *.pyc

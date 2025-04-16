@@ -72,7 +72,7 @@ def mostrar_spinner_e_analisar(nome_arquivo):
         nonlocal animando
         animando = False
         janela_spinner.destroy()
-        mostrar_resultado_final(comentario, nome_arquivo)
+        automacao(nome_arquivo, comentario) 
 
     threading.Thread(target=executar_analise).start()
 
@@ -87,11 +87,8 @@ def mostrar_resultado_final(texto, nome_arquivo):
     texto_box.insert("1.0", texto)
     texto_box.config(state="disabled")
     texto_box.pack(expand=True, fill="both", padx=10, pady=10)
-    botao_automacao = tk.Button(janela_final, text="Automação", command=lambda: automacao(nome_arquivo))
-    botao_automacao.pack(pady=10)
 
-#FOCO NA BUSCA
-def automacao(nome_arquivo):
+def automacao(nome_arquivo, texto_analise):
     caminho_pasta = pasta_arquivos
 
     if not os.path.exists(os.path.join(caminho_pasta, nome_arquivo)):
@@ -100,22 +97,22 @@ def automacao(nome_arquivo):
 
     subprocess.Popen(f'explorer "{caminho_pasta}"')
     time.sleep(3)
-
     pyautogui.hotkey('ctrl', 'f')
     time.sleep(1)
 
     nome_base = os.path.splitext(nome_arquivo)[0]
     pyautogui.write(nome_base[:100], interval=0.02)
-    pyautogui.press('enter')  
 
-    time.sleep(3)
-
-    pyautogui.press('down')   
+    time.sleep(1.5) 
+    pyautogui.press('down') 
     time.sleep(0.5)
     pyautogui.press('enter')  
-    time.sleep(0.5)
-    pyautogui.press('enter')  #
-
+    time.sleep(1)
+    pyautogui.press('down') 
+    pyautogui.press('down') 
+    pyautogui.press('enter')
+    
+    mostrar_resultado_final(texto_analise, nome_arquivo)
 
 def exibir_interface_de_resultados():
     janela_resultados = tk.Toplevel()
