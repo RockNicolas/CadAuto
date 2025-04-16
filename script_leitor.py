@@ -7,6 +7,7 @@ import time
 import pyautogui
 import subprocess
 from dotenv import load_dotenv
+from analyzers import pdf, imagem
 
 load_dotenv()
 
@@ -30,19 +31,11 @@ def analisar_tipo_arquivo(nome_arquivo):
     ext = os.path.splitext(nome_arquivo)[1].lower()
 
     if ext == ".pdf":
-        return "Este é um arquivo PDF, possivelmente um documento de texto."
-    elif ext in [".xls", ".xlsx"]:
-        return "Este é um arquivo Excel, geralmente utilizado para planilhas."
-    elif ext == ".dwg":
-        return "Este é um arquivo DWG, comumente usado em projetos do AutoCAD."
+        return pdf.analisar(nome_arquivo, pasta_arquivos)
     elif ext in [".jpg", ".jpeg", ".png"]:
-        return "Este é um arquivo de imagem (JPG/PNG)."
-    elif ext in [".doc", ".docx"]:
-        return "Este é um arquivo Word, usado para documentos de texto formatados."
-    elif ext in [".txt"]:
-        return "Este é um arquivo de texto simples (.txt)."
+        return imagem.analisar(nome_arquivo, pasta_arquivos)
     else:
-        return f"Tipo de arquivo '{ext}' não reconhecido com precisão."
+        return('tipo de arquivo não encontrado.')
 
 def salvar_resultado_analise(nome_arquivo, conteudo):
     nome_base = os.path.splitext(nome_arquivo)[0]
