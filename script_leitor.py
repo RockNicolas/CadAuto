@@ -7,7 +7,7 @@ import time
 import pyautogui
 import subprocess
 from dotenv import load_dotenv
-from analyzers import pdf, imagem
+from PIL import Image, ImageTk
 
 load_dotenv()
 
@@ -29,13 +29,16 @@ def centralizar_janela(janela, largura, altura):
 
 def analisar_tipo_arquivo(nome_arquivo):
     ext = os.path.splitext(nome_arquivo)[1].lower()
-
     if ext == ".pdf":
-        return pdf.analisar(nome_arquivo, pasta_arquivos)
+        return f"O arquivo '{nome_arquivo}' é um PDF. (Análise simulada)"
     elif ext in [".jpg", ".jpeg", ".png"]:
-        return imagem.analisar(nome_arquivo, pasta_arquivos)
+        return f"O arquivo '{nome_arquivo}' é uma imagem. (Análise simulada)"
+    elif ext in [".dwg"]:
+        return f"O arquivo '{nome_arquivo}' é um desenho técnico DWG. (Análise simulada)"
+    elif ext in [".xls", ".xlsx"]:
+        return f"O arquivo '{nome_arquivo}' é uma planilha Excel. (Análise simulada)"
     else:
-        return('tipo de arquivo não encontrado.')
+        return 'Tipo de arquivo não reconhecido.'
 
 def salvar_resultado_analise(nome_arquivo, conteudo):
     nome_base = os.path.splitext(nome_arquivo)[0]
@@ -59,7 +62,7 @@ def mostrar_resultado_final(texto, nome_arquivo):
     texto_box.config(state="disabled")
     texto_box.pack(expand=True, fill="both", pady=10)
 
-def mostrar_spinner_e_analisar(nome_arquivo):
+def mostrar_spinner_e_analisar(caminho_completo, nome_arquivo):
     for widget in tk._default_root.winfo_children():
         if isinstance(widget, tk.Toplevel):
             widget.destroy()
@@ -92,48 +95,46 @@ def mostrar_spinner_e_analisar(nome_arquivo):
         comentario = analisar_tipo_arquivo(nome_arquivo)
         salvar_resultado_analise(nome_arquivo, comentario)
 
-        caminho_pasta = pasta_arquivos
-        if not os.path.exists(os.path.join(caminho_pasta, nome_arquivo)):
-            messagebox.showerror("Erro", f"Arquivo {nome_arquivo} não encontrado na pasta de automação.")
+        if not os.path.exists(caminho_completo):
+            messagebox.showerror("Erro", f"Arquivo {nome_arquivo} não encontrado.")
             return
-
-        subprocess.Popen(f'explorer "{caminho_pasta}"')
+        
+        subprocess.Popen(f'explorer "{os.path.dirname(caminho_completo)}"')
         time.sleep(3)
+
         pyautogui.hotkey('ctrl', 'f')
         time.sleep(1)
-
         nome_base = os.path.splitext(nome_arquivo)[0]
         pyautogui.write(nome_base[:100], interval=0.02)
-
         time.sleep(1.5)
         pyautogui.press('down')
         time.sleep(0.5)
         pyautogui.press('enter')
+
         time.sleep(1)
         pyautogui.press('down')
         pyautogui.press('down')
         pyautogui.press('enter')
+
         time.sleep(20)
 
-        nonlocal animando
-        animando = False
-        janela_spinner.destroy()
-        mostrar_resultado_final(comentario, nome_arquivo)
+        janela_spinner.after(0, lambda: janela_spinner.destroy())
+        janela_spinner.after(0, lambda: mostrar_resultado_final(comentario, nome_arquivo))
 
     threading.Thread(target=executar_analise, daemon=True).start()
 
-def exibir_interface_de_resultados():
-    janela_resultados = tk.Toplevel()
-    janela_resultados.title("Arquivos para Análise")
-    centralizar_janela(janela_resultados, 600, 400)
+def exibir_interface_de_arquivos(subpasta_path):
+    janela_arquivos = tk.Toplevel()
+    janela_arquivos.title(f"Arquivos de: {os.path.basename(subpasta_path)}")
+    centralizar_janela(janela_arquivos, 600, 400)
 
-    frame_lista = tk.Frame(janela_resultados)
+    frame_lista = tk.Frame(janela_arquivos)
     frame_lista.pack(fill="both", expand=True, padx=10, pady=10)
 
-    arquivos = [f for f in os.listdir(pasta_arquivos) if os.path.isfile(os.path.join(pasta_arquivos, f))]
+    arquivos = [f for f in os.listdir(subpasta_path) if os.path.isfile(os.path.join(subpasta_path, f))]
 
     if not arquivos:
-        tk.Label(frame_lista, text="Nenhum arquivo encontrado na pasta 'Archives'.", fg="red").pack(pady=20)
+        tk.Label(frame_lista, text="Nenhum arquivo encontrado nessa pasta.", fg="red").pack(pady=20)
         return
 
     for arquivo in arquivos:
@@ -143,14 +144,40 @@ def exibir_interface_de_resultados():
         label_nome = tk.Label(linha, text=arquivo, anchor="center", width=50)
         label_nome.pack(side="left", fill="x", padx=5)
 
-        botao_analisar = tk.Button(linha, text="Analisar", width=10, command=lambda a=arquivo: mostrar_spinner_e_analisar(a))
+        caminho_completo = os.path.join(subpasta_path, arquivo)
+        botao_analisar = tk.Button(linha, text="Analisar", width=10, command=lambda c=caminho_completo, a=arquivo: mostrar_spinner_e_analisar(c, a))
         botao_analisar.pack(side="right", padx=5)
+
+def exibir_interface_de_pastas():
+    janela_pastas = tk.Toplevel()
+    janela_pastas.title("Pastas para Análise")
+    centralizar_janela(janela_pastas, 600, 400)
+
+    frame_lista = tk.Frame(janela_pastas)
+    frame_lista.pack(fill="both", expand=True, padx=10, pady=10)
+
+    subpastas = [d for d in os.listdir(pasta_arquivos) if os.path.isdir(os.path.join(pasta_arquivos, d))]
+
+    if not subpastas:
+        tk.Label(frame_lista, text="Nenhuma subpasta encontrada na pasta 'Archives'.", fg="red").pack(pady=20)
+        return
+
+    for subpasta in subpastas:
+        linha = tk.Frame(frame_lista)
+        linha.pack(fill="x", pady=5)
+
+        label_nome = tk.Label(linha, text=subpasta, anchor="center", width=50)
+        label_nome.pack(side="left", fill="x", padx=5)
+
+        caminho_subpasta = os.path.join(pasta_arquivos, subpasta)
+        botao_abrir = tk.Button(linha, text="Abrir", width=10, command=lambda c=caminho_subpasta: exibir_interface_de_arquivos(c))
+        botao_abrir.pack(side="right", padx=5)
 
 root = tk.Tk()
 root.withdraw()
 
-resposta = messagebox.askyesno("Iniciar Leitura", "Deseja iniciar a análise dos arquivos na pasta 'Archives'?")
+resposta = messagebox.askyesno("Iniciar Leitura", "Deseja iniciar a análise das pastas na 'Archives'?")
 if resposta:
-    exibir_interface_de_resultados()
+    exibir_interface_de_pastas()
 
 root.mainloop()
