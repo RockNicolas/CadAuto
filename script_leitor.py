@@ -18,8 +18,17 @@ pasta_automacao = os.getenv("PASTA_AUTOMACAO")
 os.makedirs(pasta_arquivos, exist_ok=True)
 os.makedirs(pasta_saida_resultado, exist_ok=True)
 
+def centralizar_janela(janela, largura, altura):
+    janela.update_idletasks()
+    largura_tela = janela.winfo_screenwidth()
+    altura_tela = janela.winfo_screenheight()
+    x = (largura_tela // 2) - (largura // 2)
+    y = (altura_tela // 2) - (altura // 2)
+    janela.geometry(f"{largura}x{altura}+{x}+{y}")
+
 def analisar_tipo_arquivo(nome_arquivo):
     ext = os.path.splitext(nome_arquivo)[1].lower()
+
     if ext == ".pdf":
         return "Este é um arquivo PDF, possivelmente um documento de texto."
     elif ext in [".xls", ".xlsx"]:
@@ -42,16 +51,38 @@ def salvar_resultado_analise(nome_arquivo, conteudo):
         f.write(conteudo)
     return caminho_analise
 
-def mostrar_spinner_e_analisar(nome_arquivo):
-    janela_spinner = tk.Toplevel()
-    janela_spinner.title("Analisando Arquivo...")
-    janela_spinner.geometry("300x150")
+def mostrar_resultado_final(texto, nome_arquivo):
+    janela_final = tk.Toplevel()
+    janela_final.title("Resultado Final da Análise")
+    centralizar_janela(janela_final, 600, 300)
 
-    label_mensagem = tk.Label(janela_spinner, text="Analisando, por favor aguarde...")
+    container = tk.Frame(janela_final)
+    container.pack(expand=True, fill="both", padx=10, pady=10)
+
+    tk.Label(container, text="Resultado da Análise:", font=("Arial", 12, "bold"), anchor="center").pack(pady=10)
+
+    texto_box = tk.Text(container, wrap="word", height=10, width=70)
+    texto_box.insert("1.0", texto)
+    texto_box.config(state="disabled")
+    texto_box.pack(expand=True, fill="both", pady=10)
+
+def mostrar_spinner_e_analisar(nome_arquivo):
+    for widget in tk._default_root.winfo_children():
+        if isinstance(widget, tk.Toplevel):
+            widget.destroy()
+
+    janela_spinner = tk.Toplevel()
+    janela_spinner.title("Abrindo Arquivo...")
+    centralizar_janela(janela_spinner, 300, 150)
+
+    frame = tk.Frame(janela_spinner)
+    frame.pack(expand=True, fill="both", padx=20, pady=20)
+
+    label_mensagem = tk.Label(frame, text="Analisando arquivo, por favor aguarde...", justify="center")
     label_mensagem.pack(pady=10)
 
-    label_spinner = tk.Label(janela_spinner, font=("Courier", 18))
-    label_spinner.pack()
+    label_spinner = tk.Label(frame, font=("Courier", 18))
+    label_spinner.pack(pady=10)
 
     animando = True
 
@@ -62,62 +93,46 @@ def mostrar_spinner_e_analisar(nome_arquivo):
             label_spinner.config(text=frame)
             time.sleep(0.1)
 
-    threading.Thread(target=animar).start()
+    threading.Thread(target=animar, daemon=True).start()
 
     def executar_analise():
         comentario = analisar_tipo_arquivo(nome_arquivo)
-        time.sleep(5)  
-        caminho_analise = salvar_resultado_analise(nome_arquivo, comentario)
-        print(f"✅ Análise salva em: {os.path.abspath(caminho_analise)}")
+        salvar_resultado_analise(nome_arquivo, comentario)
+
+        caminho_pasta = pasta_arquivos
+        if not os.path.exists(os.path.join(caminho_pasta, nome_arquivo)):
+            messagebox.showerror("Erro", f"Arquivo {nome_arquivo} não encontrado na pasta de automação.")
+            return
+
+        subprocess.Popen(f'explorer "{caminho_pasta}"')
+        time.sleep(3)
+        pyautogui.hotkey('ctrl', 'f')
+        time.sleep(1)
+
+        nome_base = os.path.splitext(nome_arquivo)[0]
+        pyautogui.write(nome_base[:100], interval=0.02)
+
+        time.sleep(1.5)
+        pyautogui.press('down')
+        time.sleep(0.5)
+        pyautogui.press('enter')
+        time.sleep(1)
+        pyautogui.press('down')
+        pyautogui.press('down')
+        pyautogui.press('enter')
+        time.sleep(20)
+
         nonlocal animando
         animando = False
         janela_spinner.destroy()
-        automacao(nome_arquivo, comentario) 
+        mostrar_resultado_final(comentario, nome_arquivo)
 
-    threading.Thread(target=executar_analise).start()
-
-def mostrar_resultado_final(texto, nome_arquivo):
-    janela_final = tk.Toplevel()
-    janela_final.title("Resultado Final da Análise")
-    janela_final.geometry("600x300")  
-
-    tk.Label(janela_final, text="Resultado da Análise:", font=("Arial", 12, "bold")).pack(pady=10)
-
-    texto_box = tk.Text(janela_final, wrap="word", height=10, width=70)  
-    texto_box.insert("1.0", texto)
-    texto_box.config(state="disabled")
-    texto_box.pack(expand=True, fill="both", padx=10, pady=10)
-
-def automacao(nome_arquivo, texto_analise):
-    caminho_pasta = pasta_arquivos
-
-    if not os.path.exists(os.path.join(caminho_pasta, nome_arquivo)):
-        messagebox.showerror("Erro", f"Arquivo {nome_arquivo} não encontrado na pasta de automação.")
-        return
-
-    subprocess.Popen(f'explorer "{caminho_pasta}"')
-    time.sleep(3)
-    pyautogui.hotkey('ctrl', 'f')
-    time.sleep(1)
-
-    nome_base = os.path.splitext(nome_arquivo)[0]
-    pyautogui.write(nome_base[:100], interval=0.02)
-
-    time.sleep(1.5) 
-    pyautogui.press('down') 
-    time.sleep(0.5)
-    pyautogui.press('enter')  
-    time.sleep(1)
-    pyautogui.press('down') 
-    pyautogui.press('down') 
-    pyautogui.press('enter')
-    
-    mostrar_resultado_final(texto_analise, nome_arquivo)
+    threading.Thread(target=executar_analise, daemon=True).start()
 
 def exibir_interface_de_resultados():
     janela_resultados = tk.Toplevel()
     janela_resultados.title("Arquivos para Análise")
-    janela_resultados.geometry("600x400")
+    centralizar_janela(janela_resultados, 600, 400)
 
     frame_lista = tk.Frame(janela_resultados)
     frame_lista.pack(fill="both", expand=True, padx=10, pady=10)
@@ -125,18 +140,18 @@ def exibir_interface_de_resultados():
     arquivos = [f for f in os.listdir(pasta_arquivos) if os.path.isfile(os.path.join(pasta_arquivos, f))]
 
     if not arquivos:
-        tk.Label(frame_lista, text="Nenhum arquivo encontrado na pasta 'Archives'.", fg="red").pack()
+        tk.Label(frame_lista, text="Nenhum arquivo encontrado na pasta 'Archives'.", fg="red").pack(pady=20)
         return
 
     for arquivo in arquivos:
         linha = tk.Frame(frame_lista)
         linha.pack(fill="x", pady=5)
 
-        label_nome = tk.Label(linha, text=arquivo, anchor="w")
-        label_nome.pack(side="left", fill="x", expand=True)
+        label_nome = tk.Label(linha, text=arquivo, anchor="center", width=50)
+        label_nome.pack(side="left", fill="x", padx=5)
 
-        botao_analisar = tk.Button(linha, text="Analisar", command=lambda a=arquivo: mostrar_spinner_e_analisar(a))
-        botao_analisar.pack(side="right")    
+        botao_analisar = tk.Button(linha, text="Analisar", width=10, command=lambda a=arquivo: mostrar_spinner_e_analisar(a))
+        botao_analisar.pack(side="right", padx=5)
 
 root = tk.Tk()
 root.withdraw()
