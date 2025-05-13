@@ -4,8 +4,7 @@ import threading
 import time
 import pyautogui
 import subprocess
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -82,7 +81,7 @@ def mostrar_barra_de_progresso_e_analisar(caminho_completo, nome_arquivo):
 
     barra_progresso = ttk.Progressbar(frame, length=200, mode='determinate')
     barra_progresso.pack(pady=10)
-    barra_progresso['value'] = 0 
+    barra_progresso['value'] = 0
 
     def atualizar_barra(progresso):
         barra_progresso['value'] = progresso
@@ -92,32 +91,22 @@ def mostrar_barra_de_progresso_e_analisar(caminho_completo, nome_arquivo):
         comentario = analisar_tipo_arquivo(nome_arquivo)
         salvar_resultado_analise(nome_arquivo, comentario)
 
-        
         for i in range(101):
-            time.sleep(0.1)  
+            time.sleep(0.05)
             atualizar_barra(i)
 
-   
         if not os.path.exists(caminho_completo):
             messagebox.showerror("Erro", f"Arquivo {nome_arquivo} não encontrado.")
             return
 
-        subprocess.Popen(f'explorer "{os.path.dirname(caminho_completo)}"')
-        time.sleep(2) 
+        ext = os.path.splitext(nome_arquivo)[1].lower()
 
-        pyautogui.hotkey('ctrl', 'f')
-        time.sleep(0.8)  
-        nome_base = os.path.splitext(nome_arquivo)[0]
-        pyautogui.write(nome_base[:100], interval=0.02)
-        time.sleep(1)
-        pyautogui.press('down')
-        time.sleep(0.5)
-        pyautogui.press('enter')
+        os.startfile(caminho_completo)
+        time.sleep(3)  
 
-        time.sleep(1)
-        pyautogui.press('down')
-        pyautogui.press('down')
-        pyautogui.press('enter')
+        if ext in [".jpg", ".jpeg", ".png"]:
+            pyautogui.hotkey('ctrl', 'e')  
+            time.sleep(2)  
 
         janela_spinner.after(0, lambda: janela_spinner.destroy())
         janela_spinner.after(0, lambda: mostrar_resultado_final(comentario, nome_arquivo))
@@ -185,7 +174,7 @@ def exibir_interface_de_pastas():
         linha = tk.Frame(frame_lista, bg="#f2f2f2")
         linha.pack(fill="x", pady=5)
 
-        label_nome = tk.Label(linha, text=subpasta, anchor="center", width=50, bg="#f2f2f2", font=("Arial", 12))
+        label_nome = tk.Label(linha, text=subpasta, anchor="w", justify="left", width=50, bg="#f2f2f2", font=("Arial", 12))
         label_nome.pack(side="left", fill="x", padx=5)
 
         caminho_subpasta = os.path.join(pasta_arquivos, subpasta)
